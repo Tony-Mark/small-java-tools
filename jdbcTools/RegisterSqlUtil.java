@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * @BelongsProject: register
@@ -207,7 +204,9 @@ public class RegisterSqlUtil extends HttpServlet {
         /*添加文件名前的临时名*/
         String temp = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date());
         fileName =tbName +"/"+ temp + "_" + fileName;
-        part.write(savePath + "/" + fileName);
+        String path = savePath + "/" + fileName;
+        System.out.println(path);
+        part.write(path);
         /*插入数据库文件名串*/
         fileNameString.append(fileName).append("*");
         /*取出文件名的name，注意，在HTML要标准化把多个文件的name统一，否则取出与数据库列名不一致*/
@@ -321,17 +320,17 @@ public class RegisterSqlUtil extends HttpServlet {
     sqlString = sqlString + fieldstr + valStr + ")";
     return sqlString;
   }
-  
+  /**单个对象映射成json数组*/
   public static void modelToJsonArray(Object c0, JSONArray jsArray0) {
-    JSONObject js0 = new JSONObject(new LinkedHashMap<>());
+    JSONObject js0 = new JSONObject(true);
     Field[] fields = c0.getClass().getDeclaredFields();
     for (Field f0 : fields) {
       f0.setAccessible(true);
       String name0 = f0.getName();
-      String value0 = "";
+      // String value0 = "";
+      Object value0 = "";
       try {
-        value0 = f0.get(c0).toString();
-        
+        value0 = f0.get(c0);
       } catch (IllegalArgumentException | IllegalAccessException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -341,6 +340,26 @@ public class RegisterSqlUtil extends HttpServlet {
     }
     jsArray0.add(js0);
     
+  }
+  /**对象数组映射为json数组*/
+  public static void modelToJsonArray(Object []objects, JSONArray jsonArray){
+    for (Object c0:objects){
+      JSONObject jsonObject = new JSONObject(true);
+      Field[] fields = c0.getClass().getDeclaredFields();
+      for (Field f0 : fields) {
+        f0.setAccessible(true);
+        String name0 = f0.getName();
+        Object value0 = "";
+        try {
+          value0 = f0.get(c0);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        jsonObject.put(name0, value0);
+      }
+      jsonArray.add(jsonObject);
+    }
   }
   
   public static void setCode(HttpServletRequest request, HttpServletResponse response) {

@@ -48,6 +48,7 @@ some small tools for java learn
 | requestToModelHaveFile(String tbName, Object object, HttpServletRequest request) | 前端表单如果传递的数据含有文件就使用该方法进行对象映射 |
 |  requestToModel(Object object, HttpServletRequest request)   |                 不带文件数据的对象映射                 |
 |                   traversal(Object object)                   |                     遍历映射的对象                     |
-|       modelToJsonArray(Object c0, JSONArray jsArray0)        |        将对象添加进JSON格式的数组，便于传向前端        |
+|       modelToJsonArray(Object c0, JSONArray jsArray0)        |      将对象添加转换成JSON格式的数组，便于传向前端      |
+|   modelToJsonArray(Object []objects, JSONArray jsonArray)    |    将一个对象数组转换成JSON格式的数组，便于传向前端    |
 | setCode(HttpServletRequest request, HttpServletResponse response) |      设置request、response的编码格式（UTF-8格式）      |
 
