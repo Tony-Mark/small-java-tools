@@ -1,7 +1,8 @@
 # small-java-tools
+
 some small tools for java learn
 
-在jdbcTools包中有两个类：
+## 在jdbcTools包中有两个类：
 
 - JDBCUtils类主要是jdbc数据库连接，关闭，以及预编译查询、插入数据库语句的方法。
 
@@ -43,12 +44,13 @@ some small tools for java learn
 
 ``在RegisterSqlUtil类中的主要方法``
 
-|                            方法名                            |                          说明                          |
-| :----------------------------------------------------------: | :----------------------------------------------------: |
-| requestToModelHaveFile(String tbName, Object object, HttpServletRequest request) | 前端表单如果传递的数据含有文件就使用该方法进行对象映射 |
-|  requestToModel(Object object, HttpServletRequest request)   |                 不带文件数据的对象映射                 |
-|                   traversal(Object object)                   |                     遍历映射的对象                     |
-|       modelToJsonArray(Object c0, JSONArray jsArray0)        |      将对象添加转换成JSON格式的数组，便于传向前端      |
-|   modelToJsonArray(Object []objects, JSONArray jsonArray)    |    将一个对象数组转换成JSON格式的数组，便于传向前端    |
-| setCode(HttpServletRequest request, HttpServletResponse response) |      设置request、response的编码格式（UTF-8格式）      |
+|                            方法名                            |                             说明                             |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| requestToModelHaveFile(String tbName, Object object, HttpServletRequest request) |    前端表单如果传递的数据含有文件就使用该方法进行对象映射    |
+|  requestToModel(Object object, HttpServletRequest request)   |                    不带文件数据的对象映射                    |
+|                   traversal(Object object)                   |                        遍历映射的对象                        |
+|       modelToJsonArray(Object c0, JSONArray jsArray0)        |         将对象添加转换成JSON格式的数组，便于传向前端         |
+|   modelToJsonArray(Object []objects, JSONArray jsonArray)    |       将一个对象数组转换成JSON格式的数组，便于传向前端       |
+|  resultSetToJson(ResultSet resultSet, JSONArray jsonArray)   | 将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet |
+| setCode(HttpServletRequest request, HttpServletResponse response) |         设置request、response的编码格式（UTF-8格式）         |
 
