@@ -1,10 +1,14 @@
-package com.xhu.jdbc.utils;
+package com.jdbc.utils;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -104,6 +108,50 @@ public class JDBCUtils {
     return pst.executeUpdate();
   }
   
+  /**需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet*/
+  public static void resultSetToJson(ResultSet resultSet, JSONArray jsonArray) throws SQLException{
+    ResultSetMetaData rsmd = null;
+    rsmd = resultSet.getMetaData();
+    int colNum = rsmd.getColumnCount();
+    while (resultSet.next()) {
+      JSONObject jsonObject = new JSONObject(true);
+      for (int col = 1; col <= colNum; col++) {
+        /*getColumnName和getString下标都是从1开始*/
+        jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+      }
+      jsonArray.add(jsonObject);
+    }
+  }
+  /**不需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet*/
+  public static void resultSetToJson(String sql, JSONArray jsonArray, String ... args) throws SQLException{
+    ResultSet resultSet = preparedSqlForSelect(sql, args);
+    ResultSetMetaData rsmd = null;
+    rsmd = resultSet.getMetaData();
+    int colNum = rsmd.getColumnCount();
+    while (resultSet.next()) {
+      JSONObject jsonObject = new JSONObject(true);
+      for (int col = 1; col <= colNum; col++) {
+        /*getColumnName和getString下标都是从1开始*/
+        jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+      }
+      jsonArray.add(jsonObject);
+    }
+  }
+  /**不需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet*/
+  public static void resultSetToJson(String sql, JSONArray jsonArray) throws SQLException{
+    ResultSet resultSet = preparedSqlForSelect(sql);
+    ResultSetMetaData rsmd = null;
+    rsmd = resultSet.getMetaData();
+    int colNum = rsmd.getColumnCount();
+    while (resultSet.next()) {
+      JSONObject jsonObject = new JSONObject(true);
+      for (int col = 1; col <= colNum; col++) {
+        /*getColumnName和getString下标都是从1开始*/
+        jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+      }
+      jsonArray.add(jsonObject);
+    }
+  }
   /**关闭连接的重载close*/
   public static void close(ResultSet rs,Connection conn){
     if (rs != null) {
@@ -157,6 +205,18 @@ public class JDBCUtils {
       }finally {
         conn = null;
       }
+  }
+  
+  public static void close(ResultSet rs){
+    if (rs != null) {
+      try {
+        rs.close(); // 如果关闭时，又出现了异常，没有被关闭，所以添加finally
+      } catch (SQLException e) {
+        e.printStackTrace();
+      } finally {
+        rs = null;
+      }
+    }
   }
   
   public static void close(ResultSet rs, Statement st, Connection conn) {
