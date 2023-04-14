@@ -1,7 +1,8 @@
-package com.jdbc.utils;
+package com.xhu.jdbc.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -74,7 +75,6 @@ public class JDBCUtils {
     rst = pst.executeQuery();
     return rst;
   }
-  
   /**
   *@description: TODO 不需要预编译的select语句
   *@param: [sql]
@@ -106,6 +106,35 @@ public class JDBCUtils {
     }
     assert pst != null;
     return pst.executeUpdate();
+  }
+  
+  /**需要搭配jsTools.js文件实现任意单条件的数据库查询,并将其转换为json数组形式*/
+  public static void selectForSingleFactor(HttpServletRequest request, JSONArray jsonArray){
+    String args = request.getParameter("args");
+    String[] args0 = args.split(":");
+    String sql = "select * from " + args0[0] +" where " +args0[1]+" = ?";
+    try {
+      JDBCUtils.resultSetToJson(sql, jsonArray, args0[2]);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+  /**初始化查询选择数据*/
+  public static void selectInitialize(HttpServletRequest request, JSONArray jsonArray){
+    String tableName = request.getParameter("tableName");
+    String filedName = request.getParameter("filedName");
+    String sortMethod = request.getParameter("sortMethod");
+    String sql = null;
+    if (Objects.equals(sortMethod, "0")) {
+      sql = "select distinct " + filedName + " from " + tableName + " order by 1 DESC";
+    } else {
+      sql = "select distinct " + filedName + " from " + tableName;
+    }
+    try {
+      JDBCUtils.resultSetToJson(sql, jsonArray);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
   
   /**需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet*/
@@ -152,6 +181,8 @@ public class JDBCUtils {
       jsonArray.add(jsonObject);
     }
   }
+  
+  
   /**关闭连接的重载close*/
   public static void close(ResultSet rs,Connection conn){
     if (rs != null) {

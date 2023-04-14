@@ -1,4 +1,4 @@
-package com.jdbc.utils;
+package com.xhu.jdbc.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

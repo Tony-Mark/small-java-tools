@@ -49,19 +49,54 @@ function JsonsTOTable(divn, json) { //把json数组数据展示在一个“表�
 
 }
 
-//向后台查询,通用后台程序为select——单条件查询,传值(数据库表名，列名，条件名-控件的id)
-function SelectForSingleFactor(tableName, filedName, factorName) {
-    let factorName0 = document.getElementById(factorName).value.toString();
+//向后台查询,通用后台程序为select——单条件查询,传值(后台程序的url, 数据库表名, 列名, 控件元素的id, 展示的divID)
+function SelectForSingleFactor( url0, tableName, filedName, elementId, divId) {
+    let factorName = document.getElementById(elementId).value.toString();
+    console.log(factorName);
     $.ajax({
         type: "post",
-        url: "select",
+        url: url0,
         cache: false,
-        data: {"args": tableName + ":" + filedName + ":" + factorName0},
+        data: {"args": tableName + ":" + filedName + ":" + factorName},
         dataType: "Json",
         success: function (re) {
             console.log(re);
-            JsonsTOTable("info_div", re);
+            JsonsTOTable(divId, re);
             // JsonsTOdivTable("info_div",re);
+        },
+        error: function (re) {
+            alert("不成功");
+        }
+    })
+}
+
+// 初始化界面时将数据库中的信息填充进选择框中便于用户查询,传值(后台程序的url, 数据库表名, 所要查询的列名, 控件元素的id, 以何种方式进行排序[1为升序，0为降序])
+function InitialList(url0, tableName, filedName, elementId, sortMethod){
+    /*清除选择框原有的数据*/
+    $("#"+elementId).html("");
+    $.ajax({
+        type: "post",
+        url: url0,
+        cache: false,
+        data: {
+            "tableName" : tableName,
+            "filedName" : filedName,
+            "sortMethod" : sortMethod
+        },
+        dataType: "Json",
+        success: function (re) {
+            console.log(re);
+            //随便取一列取出列名
+            let keys = Object.keys(re[0]);
+            console.log(keys);
+            //将其填充进选择框
+            let element = document.getElementById(elementId);
+            for (let i = 0; i<re.length; i++){
+                let option = document.createElement("option");
+                option.value = re[i][keys[0]];
+                option.label = re[i][keys[0]];
+                element.appendChild(option);
+            }
         },
         error: function (re) {
             alert("不成功");
