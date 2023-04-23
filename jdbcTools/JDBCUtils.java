@@ -1,4 +1,4 @@
-package com.xhu.jdbc.utils;
+package com.jdbc.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -6,9 +6,12 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -86,7 +89,7 @@ public class JDBCUtils {
     Statement statement = connection.createStatement();
     return statement.executeQuery(sql);
   }
-  
+  /**插入数据*/
   public static int preparedSqlForInsert(String sql,Object object) throws NullPointerException, IllegalAccessException, SQLException {
     Connection connection = getConnection();
     PreparedStatement pst = null;
@@ -119,6 +122,9 @@ public class JDBCUtils {
       e.printStackTrace();
     }
   }
+  public static void selectForSingleFactor(String sql, JSONArray jsonArray, String ... args) throws SQLException {
+    JDBCUtils.resultSetToJson(sql, jsonArray, args);
+  }
   /**初始化查询选择数据*/
   public static void selectInitialize(HttpServletRequest request, JSONArray jsonArray){
     String tableName = request.getParameter("tableName");
@@ -135,6 +141,52 @@ public class JDBCUtils {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+  /**实现单条件数据删除*/
+  public static void deleteForSingleFactor(String sql, JSONArray jsonArray, String ... args) throws SQLException {
+    Connection connection = getConnection();
+    assert connection != null;
+    PreparedStatement pst = connection.prepareStatement(sql);
+    int index = 1;
+    for( ;index<= args.length ;index++){
+      pst.setString(index, args[index-1]);
+    }
+    /*执行删除操作*/
+    int re = pst.executeUpdate();
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("re", re);
+    System.out.println(jsonObject);
+    jsonArray.add(jsonObject);
+  }
+  /**可实现多条件数据删除*/
+  public static void deleteForSingleFactor(HttpServletRequest request, JSONArray jsonArray) throws SQLException {
+    Connection connection = getConnection();
+    String args = request.getParameter("args");
+    String[] args0 = args.split(":");
+    /*分解数据库列名*/
+    String[] filedNames = args0[1].split("-");
+    /*分解数据值*/
+    String[] values = args0[2].split("-");
+    String sql = "delete from " + args0[0] + " where ";
+    /*拼凑sql串*/
+    for (String filedName : filedNames) {
+      sql += filedName + " = ? " + "and ";
+    }
+    /*去掉最后一个and,包含最后一个空格共四个字符*/
+    sql = sql.substring(0, sql.length() - 4);
+    System.out.println(sql);
+    assert connection != null;
+    PreparedStatement pst = connection.prepareStatement(sql);
+    int index = 1;
+    for (; index <= values.length; index++) {
+      pst.setString(index, values[index - 1]);
+    }
+    /*执行删除操作*/
+    int re = pst.executeUpdate();
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("re", re);
+    System.out.println(jsonObject);
+    jsonArray.add(jsonObject);
   }
   
   /**需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet*/
@@ -182,6 +234,46 @@ public class JDBCUtils {
     }
   }
   
+  /**将查询出的单个结果集映射成对象*/
+  public static <T> T resultSetToModel(String sql, Class<T> cls, String ... args) throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    ResultSet resultSet = preparedSqlForSelect(sql, args);
+    /*创建对象，便于后续反射*/
+    Object object = null;
+    while (resultSet.next()){
+      /*创建类的实体对象*/
+      object = cls.getConstructor().newInstance();
+      /*利用反射获取该类中的所有属性信息*/
+      Field[] fields = cls.getDeclaredFields();
+      for (Field field : fields){
+        /*允许获取private成员变量*/
+        field.setAccessible(true);
+        /*为对象相应属性赋值*/
+        field.set(object, resultSet.getObject(field.getName()));
+      }
+    }
+    return (T) object;
+  }
+  /**查询出来的结果集映射成list*/
+  public static <T> List<T> resultSetToModelList(String sql, Class<T> cls, String ... args) throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    List<T> list = new ArrayList<>();
+    ResultSet resultSet = preparedSqlForSelect(sql, args);
+    /*创建对象，便于后续反射*/
+    Object object = null;
+    while (resultSet.next()){
+      /*创建类的实体对象*/
+      object = cls.getConstructor().newInstance();
+      /*利用反射获取该类中的所有属性信息*/
+      Field[] fields = cls.getDeclaredFields();
+      for (Field field : fields){
+        /*允许获取private成员变量*/
+        field.setAccessible(true);
+        /*为对象相应属性赋值*/
+        field.set(object, resultSet.getObject(field.getName()));
+      }
+      list.add((T)object);
+    }
+    return list;
+  }
   
   /**关闭连接的重载close*/
   public static void close(ResultSet rs,Connection conn){

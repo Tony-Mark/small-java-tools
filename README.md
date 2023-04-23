@@ -39,9 +39,13 @@ some small tools for java learn
   |        preparedSqlForInsert(String sql,Object object)        |          预编译插入语句，其中object主要是映射至模式          |
   | selectForSingleFactor(HttpServletRequest request, JSONArray jsonArray) | 需要搭配jsTools.js文件实现任意单条件的数据库查询,并将其转换为json数组形式 |
   | selectInitialize(HttpServletRequest request, JSONArray jsonArray) |                      初始化查询选择数据                      |
+  | deleteForSingleFactor(String sql, JSONArray jsonArray, String ... args) |                      实现单条件数据删除                      |
+  | deleteForSingleFactor(HttpServletRequest request, JSONArray jsonArray) |                     可实现多条件数据删除                     |
   |  resultSetToJson(ResultSet resultSet, JSONArray jsonArray)   | 需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet |
   | resultSetToJson(String sql, JSONArray jsonArray, String ... args) | 不需要先查询。将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet |
   |       resultSetToJson(String sql, JSONArray jsonArray)       | 不需要先查询。但是仅针对无条件查询所有数据，将ResultSet结果集转换成json数组，主要使用ResultSetMetaData来封装ResultSet |
+  | T resultSetToModel(String sql, Class<T> cls, String ... args) |                将查询出的单个结果集映射成对象                |
+  | List<T> resultSetToModelList(String sql, Class<T> cls, String ... args) |                  查询出来的结果集映射成list                  |
   |                          close(..)                           |                     重载的数据库关闭方法                     |
   |                    changeToDate(String s)                    |                 将时间格式化为数据库格式时间                 |
   
@@ -65,8 +69,12 @@ some small tools for java learn
 |                            方法名                            |                             说明                             |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
 |                   JsonsTOTable(divn, json)                   |                    是jsonArray用表格展示                     |
+|                   fillList(elementId, re)                    |                      填充指定选择框内容                      |
+|               processRe(elementId, re, flage)                |                     ajax中处理返回的数据                     |
 | SelectForSingleFactor( url0, tableName, filedName, elementId) | 向后台查询,通用后台程序为select——单条件查询,传值(后台程序的url, 数据库表名, 列名, 控件元素的id) |
 | InitialList(url0, tableName, filedName, elementId, sortMethod) | 初始化界面时将数据库中的信息填充进选择框中便于用户查询,传值(后台程序的url, 数据库表名, 所要查询的列名, 控件元素的id, 以何种方式进行排序[1为升序，0为降序]) |
+|        myDelete(url0, tableName, filedName, selectId)        |                          单条件删除                          |
+| myDelete2(url0, tableName, filedName1, filedName2, selectId1, selectId2) |                          多条件删除                          |
 
 ```js
 //向后台查询,通用后台程序为select——单条件查询,传值(后台程序的url, 数据库表名, 列名, 控件元素的id, 展示的divID)
