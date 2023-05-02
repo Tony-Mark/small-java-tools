@@ -1,4 +1,4 @@
-package com.jdbc.utils;
+package com.xhu.jdbc.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -111,6 +111,23 @@ public class JDBCUtils {
     return pst.executeUpdate();
   }
   
+  /**更新数据*/
+  public static int preparedSqlForUpdate(String sql, Object object, String ... args) throws SQLException, IllegalAccessException {
+    Connection connection = getConnection();
+    int index = 1;
+    assert connection != null;
+    PreparedStatement pst = connection.prepareStatement(sql);
+    Field[] fields = object.getClass().getDeclaredFields();
+    for (Field field : fields){
+      field.setAccessible(true);
+      pst.setString(index++, field.get(object).toString());
+    }
+    for (String arg : args){
+      pst.setString(index++, arg);
+    }
+    return pst.executeUpdate();
+  }
+  
   /**需要搭配jsTools.js文件实现任意单条件的数据库查询,并将其转换为json数组形式*/
   public static void selectForSingleFactor(HttpServletRequest request, JSONArray jsonArray){
     String args = request.getParameter("args");
@@ -124,6 +141,78 @@ public class JDBCUtils {
   }
   public static void selectForSingleFactor(String sql, JSONArray jsonArray, String ... args) throws SQLException {
     JDBCUtils.resultSetToJson(sql, jsonArray, args);
+  }
+  
+  /**条件查询，并添加数据删除和更新--0 表示不添加功能 1 表示一个主键 2 表示两个主键*/
+  public static void selectForSingleFactor2(String sql, JSONArray jsonArray, Integer delete, Integer update, String ... args) throws SQLException {
+    ResultSet resultSet = preparedSqlForSelect(sql, args);
+    ResultSetMetaData rsmd = null;
+    rsmd = resultSet.getMetaData();
+    int colNum = rsmd.getColumnCount();
+    while (resultSet.next()) {
+      JSONObject jsonObject = new JSONObject(true);
+      for (int col = 1; col <= colNum; col++) {
+        /*getColumnName和getString下标都是从1开始*/
+        if (resultSet.getString(col) == null){
+          jsonObject.put(rsmd.getColumnName(col), " ");
+        }else{
+          jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        }
+      }
+      if (delete == 1){
+        jsonObject.put("删除", "<a href=myDelete?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+">删除</a>");
+      }
+      if (update == 1){
+        jsonObject.put("修改", "<a href=myUpdate.html?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+">修改</a>");
+      }
+      if (delete == 2){
+        jsonObject.put("删除", "<a href=myDelete2?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+"&key1="+rsmd.getColumnName(2)+"&value1="+resultSet.getString(2)+">删除</a>");
+      }
+      if (update == 2){
+        jsonObject.put("修改", "<a href=myUpdate2.html?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+"&key1="+rsmd.getColumnName(2)+"&value1="+resultSet.getString(2)+">修改</a>");
+      }
+      jsonArray.add(jsonObject);
+    }
+  }
+  
+  /**无条件查询，并添加数据的删除和更新功能--0 表示不添加功能 1 表示一个主键 2 表示两个主键*/
+  public static void selectForSingleFactor2(String sql, JSONArray jsonArray, Integer delete, Integer update) throws SQLException {
+    ResultSet resultSet = preparedSqlForSelect(sql);
+    ResultSetMetaData rsmd = null;
+    rsmd = resultSet.getMetaData();
+    int colNum = rsmd.getColumnCount();
+    while (resultSet.next()) {
+      JSONObject jsonObject = new JSONObject(true);
+      for (int col = 1; col <= colNum; col++) {
+        /*getColumnName和getString下标都是从1开始*/
+        if (resultSet.getString(col) == null){
+          jsonObject.put(rsmd.getColumnName(col), " ");
+        }else{
+          jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        }
+      }
+      if (delete == 1){
+        jsonObject.put("删除", "<a href=myDelete?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+">删除</a>");
+      }
+      if (update == 1){
+        jsonObject.put("修改", "<a href=myUpdate.html?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+">修改</a>");
+      }
+      if (delete == 2){
+        jsonObject.put("删除", "<a href=myDelete2?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+"&key1="+rsmd.getColumnName(2)+"&value1="+resultSet.getString(2)+">删除</a>");
+      }
+      if (update == 2){
+        jsonObject.put("修改", "<a href=myUpdate2.html?tableName="+rsmd.getTableName(1)+"&key0="+rsmd.getColumnName(1)+
+            "&value0="+resultSet.getString(1)+"&key1="+rsmd.getColumnName(2)+"&value1="+resultSet.getString(2)+">修改</a>");
+      }
+      jsonArray.add(jsonObject);
+    }
   }
   /**初始化查询选择数据*/
   public static void selectInitialize(HttpServletRequest request, JSONArray jsonArray){
@@ -142,7 +231,7 @@ public class JDBCUtils {
       e.printStackTrace();
     }
   }
-  /**实现单条件数据删除*/
+  /**实现条件数据删除*/
   public static void deleteForSingleFactor(String sql, JSONArray jsonArray, String ... args) throws SQLException {
     Connection connection = getConnection();
     assert connection != null;
@@ -155,7 +244,6 @@ public class JDBCUtils {
     int re = pst.executeUpdate();
     JSONObject jsonObject = new JSONObject();
     jsonObject.put("re", re);
-    System.out.println(jsonObject);
     jsonArray.add(jsonObject);
   }
   /**可实现多条件数据删除*/
@@ -213,7 +301,11 @@ public class JDBCUtils {
       JSONObject jsonObject = new JSONObject(true);
       for (int col = 1; col <= colNum; col++) {
         /*getColumnName和getString下标都是从1开始*/
-        jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        if (resultSet.getString(col) == null){
+          jsonObject.put(rsmd.getColumnName(col), " ");
+        }else{
+          jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        }
       }
       jsonArray.add(jsonObject);
     }
@@ -228,7 +320,11 @@ public class JDBCUtils {
       JSONObject jsonObject = new JSONObject(true);
       for (int col = 1; col <= colNum; col++) {
         /*getColumnName和getString下标都是从1开始*/
-        jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        if (resultSet.getString(col) == null){
+          jsonObject.put(rsmd.getColumnName(col), " ");
+        }else{
+          jsonObject.put(rsmd.getColumnName(col), resultSet.getString(col));
+        }
       }
       jsonArray.add(jsonObject);
     }

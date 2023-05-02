@@ -1,0 +1,13 @@
+.table0{
+    font-family: "华文楷体", serif;
+    font-size: 20px;
+    border: 1px;
+    width: 95%;
+}
+.table0 th{
+    background-color: #45a049;
+    width: auto;
+}
+.table0 td{
+    background-color: white;
+}

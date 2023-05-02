@@ -1,4 +1,4 @@
-package com.jdbc.utils;
+package com.xhu.jdbc.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -12,11 +12,10 @@ import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
 
 /**
  * @BelongsProject: register
